@@ -1,0 +1,47 @@
+name: Triton Inference Server Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake build-essential
+
+      - name: Create Build Directory
+        run: mkdir -p build
+
+      - name: Configure CMake
+        run: |
+          cd build
+          cmake -DCMAKE_INSTALL_PREFIX:PATH=$(pwd)/install \
+                -DTRITON_BUILD_ONNXRUNTIME_VERSION=1.19.2 \
+                -DTRITON_BUILD_CONTAINER_VERSION=24.09 \
+                -DTRITON_ENABLE_GPU=OFF \
+                -DTRITON_ENABLE_TENSORRT=OFF \
+                -DTRITON_ENABLE_METRICS=ON \
+                -DTRITON_ENABLE_ONNXRUNTIME_METRICS=ON \
+                -DCMAKE_SYSTEM_PROCESSOR=x86_64 ..
+
+      - name: Build and Install
+        run: |
+          cd build
+          make install
+
+      - name: Archive Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/install
