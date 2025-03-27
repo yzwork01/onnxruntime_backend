@@ -43,7 +43,7 @@ jobs:
       - name: Build and Install
         run: |
           cd build
-          make install
+          make install --allow_running_as_root --jobs=$(nproc)
 
       - name: Archive Build Artifacts
         uses: actions/upload-artifact@v4
